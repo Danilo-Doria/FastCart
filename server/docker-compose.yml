@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+
+    container_name: fast_cart-postgres
+
+    environment:
+      POSTGRES_DB: fast_cart_db
+      POSTGRES_USER: fast_cart_user
+      POSTGRES_PASSWORD: fast_cart_123
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    # Healthcheck: le permite a Docker (y a otras herramientas) saber si Postgres
+    # ya terminó de inicializar y está listo para aceptar conexiones,
+    # y no solo si el proceso "está corriendo" (que no es lo mismo).
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gowmerce_user -d gowmerce_db"]
+      interval: 5s   # cada cuánto revisa
+      timeout: 5s    # cuánto espera antes de considerar que falló
+      retries: 5     # cuántos intentos antes de marcarlo como "unhealthy"
+
+volumes:
+  postgres_data:

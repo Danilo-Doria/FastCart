@@ -1,0 +1,27 @@
+# --- MAVEN (Aplica a todas las carpetas semana_*) ---
+**/target/
+**/.mvn/
+*.flattened-pom.xml
+classes/
+
+# --- ARCHIVOS TEMPORALES DE JAVA ---
+*.class
+*.log
+
+# --- ENTORNOS DE DESARROLLO (IDEs) ---
+# IntelliJ IDEA
+**/.idea/
+*.iml
+*.iws
+
+# Eclipse
+**/.classpath
+**/.project
+**/.settings/
+
+# Visual Studio Code
+**/.vscode/
+
+# --- SISTEMA OPERATIVO ---
+.DS_Store
+Thumbs.db
