@@ -1,9 +1,11 @@
 package com.danilodoria.server.controller;
 
 import com.danilodoria.server.dto.request.LoginRequestDTO;
+import com.danilodoria.server.dto.request.LogoutRequest;
 import com.danilodoria.server.dto.request.RefreshRequestDTO;
 import com.danilodoria.server.dto.response.AuthResponse;
 import com.danilodoria.server.entity.RefreshToken;
+import com.danilodoria.server.exception.InvalidRefreshTokenException;
 import com.danilodoria.server.security.JwtService;
 import com.danilodoria.server.service.RefreshTokenService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
@@ -59,7 +62,6 @@ public class AuthController {
                 request.password()));
 
         UserDetails user = (UserDetails) authentication.getPrincipal();
-        String accessToken = jwtService.generateAccessToken(user);
 
         return ResponseEntity.ok(issueTokens(user));
     }
@@ -91,14 +93,52 @@ public class AuthController {
         return ResponseEntity.ok(issueTokens(user));
     }
 
+    @Operation(
+            summary = "Log out",
+            description = "Revokes the authenticated user's refresh token, preventing it from being used to obtain new access tokens without logging in again."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Session closed successfully, refresh token revoked"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Refresh token is invalid, expired, already revoked, or does not belong to the authenticated user"
+            )
+    })
+    // @AuthenticationPrincipal UserDetails authenticatedUser te da directo el usuario que ya autenticó
+    // tu JwtAuthenticationFilter a través del SecurityContextHolder — no necesitas volver a leer
+    // el header Authorization a mano.
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(
+            @Valid @RequestBody LogoutRequest request,
+            @AuthenticationPrincipal UserDetails authenticatedUser) {
+
+        RefreshToken refreshToken = refreshTokenService.validate(request.refreshToken());
+
+        if (!refreshToken.getUsername().equals(authenticatedUser.getUsername())) {
+            throw new InvalidRefreshTokenException("Este refresh token no pertenece al usuario autenticado");
+        }
+
+        refreshTokenService.revoke(refreshToken);
+        return ResponseEntity.noContent().build();
+    }
+
     private AuthResponse issueTokens(UserDetails user) {
+
+        // Genera un Access Token JWT para autenticar las peticiones del usuario.
         String accessToken = jwtService.generateAccessToken(user);
+
+        // Genera y guarda un Refresh Token asociado al usuario.
         RefreshToken refreshToken = refreshTokenService.create(user.getUsername());
 
+        // Construye la respuesta que contiene los tokens y la información de expiración.
         return new AuthResponse(
-                accessToken,
-                refreshToken.getToken(),
-                "Bearer",
-                accessTokenExpirationMs / 1000);
+                accessToken,                    // Token de acceso para consumir los endpoints protegidos.
+                refreshToken.getToken(),        // Token utilizado para solicitar un nuevo Access Token.
+                "Bearer",                       // Tipo de autenticación utilizado en el encabezado Authorization.
+                accessTokenExpirationMs / 1000  // Convierte la expiración de milisegundos a segundos.
+        );
     }
 }

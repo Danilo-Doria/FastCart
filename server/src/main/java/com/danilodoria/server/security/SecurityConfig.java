@@ -2,6 +2,7 @@ package com.danilodoria.server.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -33,15 +34,24 @@ public class SecurityConfig {
                 // CORS le dice a Spring Security que utilice la configuración CORS disponible.
                 .cors(cors -> {
                 })
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .exceptionHandling(exception -> exception.authenticationEntryPoint(
-                        new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                        .accessDeniedHandler((request, response, ex) -> {
+                            response.setStatus(HttpStatus.FORBIDDEN.value());
+                            response.setContentType("application/json");
+                            response.getWriter().write("""
+                                    {"status":403,"error":"Forbidden","message":"No tienes permisos para esta acción"}
+                                    """);
+                        }))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/swagger-ui/**", "/swagger-ui.html",
-                                "/v3/api-docs/**")
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated())
+                        .requestMatchers("/auth/login", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/productos/**", "/categorias/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/productos/**", "/categorias/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/productos/**", "/categorias/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/productos/**", "/categorias/**").hasRole("ADMIN")
+                        .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

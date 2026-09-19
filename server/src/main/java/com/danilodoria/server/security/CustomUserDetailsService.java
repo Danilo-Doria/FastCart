@@ -16,9 +16,12 @@ public class CustomUserDetailsService implements UserDetailsService {
         var usuario = usuarioRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
 
-        return User.withUsername(usuario.getUsername())
+        // withUsername() es un metodo estático del User de Spring Security que sirve para iniciar la
+        // construcción de un objeto UserDetails indicando cuál será su nombre de usuario
+        return User.withUsername(
+                usuario.getUsername())
                 .password(usuario.getPassword())
-                .roles(usuario.getRole())
+                .roles(usuario.getRole().name())
                 .build();
     }
 }

@@ -16,13 +16,16 @@ public class RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
 
+    // Obtiene desde la configuración el tiempo de expiración del refresh token en milisegundos
     @Value("${security.jwt.refresh-token-expiration-ms}")
     private long refreshTokenExpirationMs;
 
     public RefreshToken create(String username) {
         RefreshToken refreshToken = RefreshToken.builder()
+                // UUID.randomUUID() genera un identificador aleatorio
                 .token(UUID.randomUUID().toString())
                 .username(username)
+                // Establece la fecha y hora en la que el refresh token dejará de ser válido
                 .expiresAt(Instant.now().plusMillis(refreshTokenExpirationMs))
                 .revoked(false)
                 .build();
