@@ -1,0 +1,41 @@
+<h2 mat-dialog-title class="text-xl font-bold text-slate-800">
+  {{ data ? 'Editar Producto' : 'Crear Producto' }}
+</h2>
+
+<form [formGroup]="form" (ngSubmit)="guardar()" class="flex flex-col gap-4 p-2">
+  <mat-dialog-content class="flex flex-col gap-4 !py-2">
+
+    <!-- Campo Nombre -->
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Nombre del Producto</mat-label>
+      <input matInput formControlName="name" placeholder="Ej. Proyector HD" />
+      <mat-error *ngIf="form.get('name')?.hasError('required')">El nombre es obligatorio</mat-error>
+    </mat-form-field>
+
+    <!-- Campo Precio -->
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Precio</mat-label>
+      <input matInput type="number" formControlName="price" placeholder="0.00" />
+      <mat-error *ngIf="form.get('price')?.hasError('required')">El precio es obligatorio</mat-error>
+    </mat-form-field>
+
+    <!-- Campo Categoría con mat-select -->
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Categoría</mat-label>
+      <mat-select formControlName="categoryId" [placeholder]="isLoadingCategorias() ? 'Cargando...' : 'Seleccione una categoría'">
+        <mat-option *ngFor="let cat of categorias()" [value]="cat.id">
+          {{ cat.name }}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="form.get('categoryId')?.hasError('required')">Debe seleccionar una categoría</mat-error>
+    </mat-form-field>
+
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end" class="gap-2 pt-2">
+    <button mat-button type="button" (click)="cancelar()">Cancelar</button>
+    <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">
+      {{ data ? 'Actualizar' : 'Guardar' }}
+    </button>
+  </mat-dialog-actions>
+</form>
