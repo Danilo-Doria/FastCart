@@ -2,7 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { LoginRequest, AuthResponse, RefreshTokenRequest } from '../../models/auth.model';
+import { LoginRequest, AuthResponse, RefreshTokenRequest } from '../models/auth.model';
 
 // @Injectable: Le dice a Angular que esta clase es un "Servicio" que se puede inyectar en otras partes de la app (como componentes o interceptores).
 // providedIn: 'root' significa que el servicio es global y habrá una sola instancia viva en toda tu aplicación.
@@ -37,7 +37,7 @@ export class AuthService {
     );
   }
 
-  // 4. RENOVACIÓN DE TOKEN (REFRESH)
+  // RENOVACIÓN DE TOKEN (REFRESH)
   // El interceptor llama a esta función cuando el Access Token expira.
   refreshToken(): Observable<AuthResponse> {
     const refreshToken = this.getRefreshToken(); // Recupera el token de refresco guardado.
@@ -51,7 +51,7 @@ export class AuthService {
     );
   }
 
-  // 5. CIERRE DE SESIÓN
+  // CIERRE DE SESIÓN
   logout(): void {
     // Borra por completo todos los datos de sesión almacenados en el navegador.
     localStorage.removeItem('access_token');
@@ -62,7 +62,7 @@ export class AuthService {
     this.isLoggedIn.set(false);
   }
 
-  // 6. MÉTODOS AUXILIARES DE LECTURA (GETTERS)
+  // MÉTODOS AUXILIARES DE LECTURA (GETTERS)
   // Recupera el Access Token (el que se envía en cada petición HTTP).
   getAccessToken(): string | null {
     return localStorage.getItem('access_token');
@@ -78,7 +78,7 @@ export class AuthService {
     return localStorage.getItem('token_type');
   }
 
-  // 7. MÉTODOS PRIVADOS INTERNOS
+  // MÉTODOS PRIVADOS INTERNOS
   // Guarda de manera organizada los tres strings clave que devuelve el servidor en el LocalStorage.
   private saveSession(response: AuthResponse): void {
     localStorage.setItem('access_token', response.accessToken);

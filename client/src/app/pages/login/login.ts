@@ -50,7 +50,7 @@ export class LoginComponent {
     this.authService.login(this.loginForm.value).subscribe({
       next: () => {
         this.isLoading = false;
-        alert('¡Login exitoso!');
+        this.router.navigate(['/productos']);
       },
       error: (err) => {
         this.isLoading = false;

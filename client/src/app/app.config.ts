@@ -2,10 +2,16 @@ import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { jwtInterceptor } from './interceptors/jwt/interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes)
+    provideRouter(routes),
+
+    provideHttpClient(
+      withInterceptors([jwtInterceptor]) // <- Aquí le decimos a Angular que pase TODAS las peticiones por tu aduana JWT
+    )
   ]
 };

@@ -1,0 +1,113 @@
+<div class="min-h-screen bg-slate-50 flex flex-col">
+
+    <!-- Navbar / Header -->
+    <mat-toolbar color="primary" class="shadow-md flex justify-between px-6">
+        <div class="flex items-center gap-2">
+            <mat-icon>inventory_2</mat-icon>
+            <span class="text-xl font-bold tracking-wide">Eventify - Productos</span>
+        </div>
+        <button mat-flat-button color="warn" (click)="logout()" class="flex items-center gap-1">
+            <mat-icon>logout</mat-icon>
+            <span>Cerrar Sesión</span>
+        </button>
+    </mat-toolbar>
+
+    <!-- Contenido Principal -->
+    <main class="flex-1 p-6 max-w-7xl mx-auto w-full">
+        <mat-card class="shadow-lg rounded-2xl bg-white p-6">
+
+            <!-- Encabezado de la Tarjeta y Acciones -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-800">Catálogo de Productos</h1>
+                    <p class="text-slate-500 text-sm mt-1">Gestión de inventario consumiendo Spring Boot API</p>
+                </div>
+                <button mat-raised-button color="primary" class="flex items-center gap-2 py-2 px-4 rounded-xl">
+                    <mat-icon>add</mat-icon>
+                    <span>Nuevo Producto</span>
+                </button>
+            </div>
+
+            <!-- Estado de Carga -->
+            <div *ngIf="isLoading()" class="flex flex-col items-center justify-center py-12">
+                <mat-spinner diameter="48"></mat-spinner>
+                <p class="text-slate-500 mt-4 text-sm font-medium">Cargando productos...</p>
+            </div>
+
+            <!-- Mensaje de Error -->
+            <div *ngIf="errorMessage() && !isLoading()"
+                class="p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl text-center my-4">
+                {{ errorMessage() }}
+            </div>
+
+            <!-- Tabla de Angular Material -->
+            <div *ngIf="!isLoading() && !errorMessage()" class="overflow-x-auto rounded-xl border border-slate-200">
+                <table mat-table [dataSource]="productos()" class="w-full">
+
+                    <!-- Columna ID -->
+                    <ng-container matColumnDef="id">
+                        <th mat-header-cell *matHeaderCellDef class="font-bold text-slate-700"> # </th>
+                        <td mat-cell *matCellDef="let element" class="text-slate-500 font-mono"> {{ element.id }} </td>
+                    </ng-container>
+
+                    <!-- Columna Nombre -->
+                    <ng-container matColumnDef="name">
+                        <th mat-header-cell *matHeaderCellDef class="font-bold text-slate-700"> Nombre </th>
+                        <td mat-cell *matCellDef="let element" class="font-medium text-slate-800"> {{ element.name }}
+                        </td>
+                    </ng-container>
+
+                    <!-- Columna Precio -->
+                    <ng-container matColumnDef="price">
+                        <th mat-header-cell *matHeaderCellDef class="font-bold text-slate-700"> Precio </th>
+                        <td mat-cell *matCellDef="let element" class="font-semibold text-emerald-600">
+                            {{ element.price | currency:'USD':'symbol':'1.2-2' }}
+                        </td>
+                    </ng-container>
+
+                    <!-- Columna Categoría -->
+                    <ng-container matColumnDef="categoryNombre">
+                        <th mat-header-cell *matHeaderCellDef class="font-bold text-slate-700"> Categoría </th>
+                        <td mat-cell *matCellDef="let element">
+                            <span
+                                class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg text-xs font-medium border border-indigo-100">
+                                {{ element.categoryNombre || 'Sin Categoría' }}
+                            </span>
+                        </td>
+                    </ng-container>
+
+                    <!-- Columna Acciones -->
+                    <ng-container matColumnDef="acciones">
+                        <th mat-header-cell *matHeaderCellDef class="font-bold text-slate-700 text-center"> Acciones
+                        </th>
+                        <td mat-cell *matCellDef="let element" class="text-center">
+                            <div class="flex justify-center gap-1">
+                                <button mat-icon-button color="primary" aria-label="Editar producto">
+                                    <mat-icon>edit</mat-icon>
+                                </button>
+                                <button mat-icon-button color="warn" (click)="eliminarProducto(element.id)"
+                                    aria-label="Eliminar producto">
+                                    <mat-icon>delete</mat-icon>
+                                </button>
+                            </div>
+                        </td>
+                    </ng-container>
+
+                    <!-- Filas -->
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                        class="hover:bg-slate-50 transition-colors"></tr>
+
+                    <!-- Fila vacía -->
+                    <tr class="mat-row" *matNoDataRow>
+                        <td class="mat-cell text-center py-8 text-slate-400" colspan="5">
+                            No se encontraron productos registrados en la base de datos.
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+        </mat-card>
+
+    </main>
+</div>
